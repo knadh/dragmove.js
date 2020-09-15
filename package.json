@@ -1,0 +1,30 @@
+{
+  "name": "@knadh/dragmove",
+  "version": "0.1.0",
+  "description": "A tiny, zero-dependency library for making DOM elements draggable.",
+  "main": "dragmove.js",
+  "files": [
+    "dragmove.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knadh/dragmove.js.git"
+  },
+  "keywords": [
+    "drag",
+    "drop",
+    "move"
+  ],
+  "author": "Kailash Nadh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/knadh/dragmove.js/issues"
+  },
+  "homepage": "https://github.com/knadh/dragmove.js#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}

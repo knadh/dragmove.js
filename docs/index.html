@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charSet="utf-8"/>
+    <style>
+        body {
+            font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+        }
+        .parent {
+            background: #ddd;
+            position: fixed;
+            top: 25%;
+            left: 10%;
+            width: 150px;
+            height: 150px;
+        }
+        .handle {
+            background: #888;
+            cursor: move;
+            width: 130px;
+            color: #fff;
+            padding: 10px;
+        }
+
+        #test2 {
+            background: #888;
+            left: auto;
+            right: 10%;
+        }
+        #test2 .handle {
+            background: #ddd;
+            color: #888;
+        }
+    </style>
+    </head>
+<body>
+    <p><a href="https://github.com/knadh/dragmove.js"><small>dragmove.js</small></a></p>
+    <div id="test" class="parent" data-drag-bound="true">
+        <div class="handle" style="">Drag here</div>
+    </div>
+    <div id="test2" class="parent">
+        <div class="handle" style="">Drag here</div>
+    </div>
+
+    <script type="module">
+        import { dragmove } from './dragmove.js';
+
+        // Use the start/end events to simulate "snap to edge" behaviour.
+        const snapThreshold = 50;
+        function onStart(el, x, y) {
+            // On drag start, remove the fixed bottom style to prevent the bottom
+            // from sticking on the screen.
+            el.style.top = el.offsetTop + "px"
+            el.style.bottom = "auto"
+        }
+
+        function onEnd(el, x, y) {
+            // Automatically snap to corners.
+            if (window.innerHeight - (el.offsetTop + el.offsetHeight) < snapThreshold) {
+                el.style.top = "auto"
+                el.style.bottom = "0px"
+            }
+            if (window.innerWidth - (el.offsetLeft + el.offsetWidth) < snapThreshold) {
+                el.style.left = "auto"
+                el.style.right = "0px"
+            }
+            if (el.offsetTop < snapThreshold) {
+                el.style.top = "0px"
+            }
+            if (el.offsetLeft < snapThreshold) {
+                el.style.left = "0px"
+            }
+        }
+
+        (function() {
+            dragmove(document.querySelector("#test"),
+                document.querySelector("#test .handle"), onStart, onEnd);
+
+            dragmove(document.querySelector("#test2"),
+                document.querySelector("#test2 .handle"), onStart, onEnd);
+        })();
+    </script>
+</body>
+</html>
