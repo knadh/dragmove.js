@@ -12,7 +12,7 @@ npm install @knadh/dragmove
 import { dragmove } from @knadh/dragmove;
 
 // (target, handler, onStart(target, x, y), onEnd(target, x, y)).
-// onStart and onEnd are optional callbacks that receive target element, and x, y co-oordinates.
+// onStart and onEnd are optional callbacks that receive target element, and x, y coordinates.
 
 dragmove(document.querySelector("#box"), document.querySelector("#box .drag-handle"));
 ```
