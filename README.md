@@ -1,3 +1,5 @@
+<a href="https://zerodha.tech"><img src="https://zerodha.tech/static/images/github-badge.svg" align="right" /></a>
+
 # dragmove.js
 
 A super tiny Javascript library to make DOM elements draggable and movable. Has touch screen support. Zero dependencies and 500 bytes Gzipped. [Demo here](https://knadh.github.io/dragmove.js/docs/).
