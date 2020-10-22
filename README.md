@@ -21,6 +21,6 @@ dragmove(document.querySelector("#box"), document.querySelector("#box .drag-hand
 ```
 
 ### ES6 module
-[Check this example](https://github.com/knadh/dragmove.js/blob/master/docs/index.html) to include dragmove.js as a `<script>` directly on HTML page.
+[Check this example](https://github.com/knadh/dragmove.js/blob/master/docs/index.html) to include dragmove.js as a `<script>` directly on an HTML page.
 
 Licensed under the MIT License.
