@@ -6,6 +6,7 @@ A super tiny Javascript library to make DOM elements draggable and movable. Has 
 
 ## Usage
 
+### Node
 ```shell
 npm install @knadh/dragmove
 ```
@@ -18,5 +19,8 @@ import { dragmove } from @knadh/dragmove;
 
 dragmove(document.querySelector("#box"), document.querySelector("#box .drag-handle"));
 ```
+
+### ES6 module
+[Check this example](https://github.com/knadh/dragmove.js/blob/master/docs/index.html) to include dragmove.js as a `<script>` directly on an HTML page.
 
 Licensed under the MIT License.
