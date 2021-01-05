@@ -47,12 +47,13 @@ export const dragmove = function(target, handler, onStart, onEnd) {
 
   // On leaving click, stop moving.
   document.addEventListener(_isTouch ? "touchend" : "mouseup", function(e) {
-    isMoving = false;
-    hasStarted = false;
+    
 
-    if (onEnd && e.target === handler) {
+    if (onEnd && hasStarted) {
       onEnd(target, parseInt(target.style.left), parseInt(target.style.top));
     }
+    isMoving = false;
+    hasStarted = false;
   });
 
   // Register mouse-move callback to move the element.
