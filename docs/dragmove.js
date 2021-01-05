@@ -1,5 +1,7 @@
-/* eslint-disable */
-// Global states.
+// https://github.com/knadh/dragmove.js
+// Kailash Nadh (c) 2020.
+// MIT License.
+
 let _loaded = false;
 let _callbacks = [];
 const _isTouch = window.ontouchstart !== undefined;
@@ -45,12 +47,12 @@ export const dragmove = function(target, handler, onStart, onEnd) {
 
   // On leaving click, stop moving.
   document.addEventListener(_isTouch ? "touchend" : "mouseup", function(e) {
-    isMoving = false;
-    hasStarted = false;
-
-    if (onEnd && e.target === handler) {
+    if (onEnd && hasStarted) {
       onEnd(target, parseInt(target.style.left), parseInt(target.style.top));
     }
+
+    isMoving = false;
+    hasStarted = false;
   });
 
   // Register mouse-move callback to move the element.

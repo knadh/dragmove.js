@@ -31,15 +31,20 @@
             background: #ddd;
             color: #888;
         }
+        .handle span {
+            display: inline-block;
+            background: red;
+            pointer-events: none;
+        }
     </style>
     </head>
 <body>
     <p><a href="https://github.com/knadh/dragmove.js"><small>dragmove.js</small></a></p>
     <div id="test" class="parent" data-drag-bound="true">
-        <div class="handle" style="">Drag here</div>
+        <div class="handle" style=""><span>Drag here</span></div>
     </div>
     <div id="test2" class="parent">
-        <div class="handle" style="">Drag here</div>
+        <div class="handle" style=""><span>Drag here</span></div>
     </div>
 
     <script type="module">
@@ -55,6 +60,7 @@
         }
 
         function onEnd(el, x, y) {
+            console.log('end');
             // Automatically snap to corners.
             if (window.innerHeight - (el.offsetTop + el.offsetHeight) < snapThreshold) {
                 el.style.top = "auto"
