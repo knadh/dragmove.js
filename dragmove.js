@@ -73,12 +73,10 @@ export const dragmove = function(target, handler, onStart, onEnd) {
 
     // If boundary checking is on, don't let the element cross the viewport.
     if (target.dataset.dragBoundary === "true") {
-      if (lastX < 1 || lastX >= window.innerWidth - target.offsetWidth) {
-        return;
-      }
-      if (lastY < 1 || lastY >= window.innerHeight - target.offsetHeight) {
-        return;
-      }
+      if (lastX < 0) lastX = 0;
+      else if (lastX > window.innerWidth - target.offsetWidth) lastX = window.innerWidth - target.offsetWidth;
+      if (lastY < 0) lastY = 0;
+      else if (lastY > window.innerHeight - target.offsetHeight) lastY = window.innerHeight - target.offsetHeight;
     }
 
     target.style.left = lastX + "px";
