@@ -2,27 +2,23 @@
 // Kailash Nadh (c) 2020.
 // MIT License.
 
-let _loaded = false;
 let _callbacks = [];
 const _isTouch = window.ontouchstart !== undefined;
 
 export const dragmove = function(target, handler, onStart, onEnd) {
   // Register a global event to capture mouse moves (once).
-  if (!_loaded) {
-    document.addEventListener(_isTouch ? "touchmove" : "mousemove", function(e) {
-      let c = e;
-      if (e.touches) {
-        c = e.touches[0];
-      }
+  handler.addEventListener(_isTouch ? "touchmove" : "mousemove", function(e) {
+    let c = e;
+    if (e.touches) {
+      c = e.touches[0];
+    }
 
-      // On mouse move, dispatch the coords to all registered callbacks.
-      for (var i = 0; i < _callbacks.length; i++) {
-        _callbacks[i](c.clientX, c.clientY);
-      }
-    });
-  }
+    // On mouse move, dispatch the coords to all registered callbacks.
+    for (var i = 0; i < _callbacks.length; i++) {
+      _callbacks[i](c.clientX, c.clientY);
+    }
+  });
 
-  _loaded = true;
   let isMoving = false, hasStarted = false;
   let startX = 0, startY = 0, lastX = 0, lastY = 0;
 
