@@ -1,6 +1,6 @@
 {
   "name": "@knadh/dragmove",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A tiny, zero-dependency library for making DOM elements draggable.",
   "main": "dragmove.js",
   "files": [
