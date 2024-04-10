@@ -2,84 +2,89 @@
 // Kailash Nadh (c) 2020.
 // MIT License.
 
-let _loaded = false;
-let _callbacks = [];
-const _isTouch = window.ontouchstart !== undefined;
+const _t = window.ontouchstart !== undefined;
+const _evStart = _t ? "touchstart" : "mousedown";
+const _evMove = _t ? "touchmove" : "mousemove";
+const _evStop = _t ? "touchend" : "mouseup";
 
-export const dragmove = function(target, handler, onStart, onEnd) {
-  // Register a global event to capture mouse moves (once).
-  if (!_loaded) {
-    document.addEventListener(_isTouch ? "touchmove" : "mousemove", function(e) {
-      let c = e;
-      if (e.touches) {
-        c = e.touches[0];
-      }
+// Current item, is moving on, map of items registered for dragging.
+let _h = null, _on = false, _items = null;
 
-      // On mouse move, dispatch the coords to all registered callbacks.
-      for (var i = 0; i < _callbacks.length; i++) {
-        _callbacks[i](c.clientX, c.clientY);
-      }
+export const dragmove = (target, handler, onStart, onEnd) => {
+  // Register start/stop/move events globally once.
+  if (!_items) {
+    _items = new WeakMap();
+    [_evStart, _evMove, _evStop].forEach((ev) => {
+      document.addEventListener(ev, handle);
     });
   }
 
-  _loaded = true;
-  let isMoving = false, hasStarted = false;
-  let startX = 0, startY = 0, lastX = 0, lastY = 0;
+  // Record the item in the map to track it.
+  _items.set(handler, { t: target, onStart, onEnd });
 
-  // On the first click and hold, record the offset of the pointer in relation
-  // to the point of click inside the element.
-  handler.addEventListener(_isTouch ? "touchstart" : "mousedown", function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    if (target.dataset.dragEnabled === "false") {
+  return {
+    remove: () => _items.delete(handler)
+  }
+}
+
+// Handle the start/move/stop events on a registered handler.
+const handle = (event) => {
+  const ev = event.touches ? event.touches[0] : event;
+
+  // Drag/drop handler DOM object.
+  const handler = ev.target;
+
+  // Check if the event is on an item already being dragged,
+  // or if it's a handler that's registered, but isn't moving yet.
+  const i = _items.get(_h || handler)
+  if (!i) {
+    return;
+  }
+
+  if (ev.type === _evStart) {
+    // Dragging is starting with a click (and may not actually proceed).
+    // It's only marked as starting
+    ev.stopPropagation();
+    ev.preventDefault();
+
+    _on = true;
+
+    // Record the starting position.
+    i.sX = i.t.offsetLeft - ev.clientX;
+    i.sY = i.t.offsetTop - ev.clientY;
+  } else if (ev.type === _evMove) {
+    // Moving has just started or is in progress.
+    if (!_on) {
       return;
     }
 
-    let c = e;
-    if (e.touches) {
-      c = e.touches[0];
+    // Register the current handler being moved globally to keep track of it.
+    // Only one handler ever moves at a time.
+    if (!_h) {
+      _h = handler;
+      i.onStart && i.onStart(handler, i.x, i.y);
     }
 
-    isMoving = true;
-    startX = target.offsetLeft - c.clientX;
-    startY = target.offsetTop - c.clientY;
-  });
-
-  // On leaving click, stop moving.
-  document.addEventListener(_isTouch ? "touchend" : "mouseup", function(e) {   
-    if (onEnd && hasStarted) {
-      onEnd(target, parseInt(target.style.left), parseInt(target.style.top));
-    }
-
-    isMoving = false;
-    hasStarted = false;
-  });
-
-  // Register mouse-move callback to move the element.
-  _callbacks.push(function move(x, y) {
-    if (!isMoving) {
-      return;
-    }
-
-    if (!hasStarted) {
-      hasStarted = true;
-      if (onStart) {
-        onStart(target, lastX, lastY);
-      }
-    }
-
-    lastX = x + startX;
-    lastY = y + startY;
+    i.x = ev.clientX + i.sX;
+    i.y = ev.clientY + i.sY;
 
     // If boundary checking is on, don't let the element cross the viewport.
-    if (target.dataset.dragBoundary === "true") {
-      lastX = Math.min(window.innerWidth - target.offsetWidth, Math.max(0, lastX));
-      lastY = Math.min(window.innerHeight - target.offsetHeight, Math.max(0, lastY));
+    if (i.t.dataset.dragBoundary === "true") {
+      i.x = Math.min(window.innerWidth - i.t.offsetWidth, Math.max(0, i.x));
+      i.y = Math.min(window.innerHeight - i.t.offsetHeight, Math.max(0, i.y));
     }
 
-    target.style.left = lastX + "px";
-    target.style.top = lastY + "px";
-  });
+    i.t.style.left = i.x + "px";
+    i.t.style.top = i.y + "px";
+  } else {
+    // Dragging is ending with click release.
+    if (i.onEnd && _h) {
+      i.onEnd(i.t, i.x, i.y);
+    }
+
+    _on = false;
+    _h = null;
+  }
 }
 
 export { dragmove as default };

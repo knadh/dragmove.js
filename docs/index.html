@@ -33,7 +33,6 @@
         }
         .handle span {
             display: inline-block;
-            background: red;
             pointer-events: none;
         }
     </style>
@@ -48,7 +47,7 @@
     </div>
 
     <script type="module">
-        import { dragmove } from './dragmove.js';
+        import { dragmove } from './dragmove.min.js';
 
         // Use the start/end events to simulate "snap to edge" behaviour.
         const snapThreshold = 50;
@@ -57,6 +56,7 @@
             // from sticking on the screen.
             el.style.top = el.offsetTop + "px"
             el.style.bottom = "auto"
+            console.log("started");
         }
 
         function onEnd(el, x, y) {
@@ -79,8 +79,11 @@
         }
 
         (function() {
-            dragmove(document.querySelector("#test"),
+            const d = dragmove(document.querySelector("#test"),
                 document.querySelector("#test .handle"), onStart, onEnd);
+
+            // Call d.remove() to remove the drag/drop listener from the element.
+            // window.setTimeout(() => d.remove(), 5000);
 
             dragmove(document.querySelector("#test2"),
                 document.querySelector("#test2 .handle"), onStart, onEnd);
