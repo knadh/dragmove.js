@@ -17,7 +17,10 @@ import { dragmove } from @knadh/dragmove;
 // (target, handler, onStart(target, x, y), onEnd(target, x, y)).
 // onStart and onEnd are optional callbacks that receive target element, and x, y coordinates.
 
-dragmove(document.querySelector("#box"), document.querySelector("#box .drag-handle"));
+const destroy = dragmove(document.querySelector("#box"), document.querySelector("#box .drag-handle"));
+
+// Later, when the element is removed from the page, free its event listeners.
+destroy();
 ```
 
 ### ES6 module

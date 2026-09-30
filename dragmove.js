@@ -5,6 +5,8 @@
 let _loaded = false;
 let _callbacks = [];
 const _isTouch = window.ontouchstart !== undefined;
+const _downEvent = _isTouch ? "touchstart" : "mousedown";
+const _upEvent = _isTouch ? "touchend" : "mouseup";
 
 export const dragmove = function(target, handler, onStart, onEnd) {
   // Register a global event to capture mouse moves (once).
@@ -28,7 +30,7 @@ export const dragmove = function(target, handler, onStart, onEnd) {
 
   // On the first click and hold, record the offset of the pointer in relation
   // to the point of click inside the element.
-  handler.addEventListener(_isTouch ? "touchstart" : "mousedown", function(e) {
+  function onDown(e) {
     e.stopPropagation();
     e.preventDefault();
     if (target.dataset.dragEnabled === "false") {
@@ -43,20 +45,20 @@ export const dragmove = function(target, handler, onStart, onEnd) {
     isMoving = true;
     startX = target.offsetLeft - c.clientX;
     startY = target.offsetTop - c.clientY;
-  });
+  }
 
   // On leaving click, stop moving.
-  document.addEventListener(_isTouch ? "touchend" : "mouseup", function(e) {   
+  function onUp() {
     if (onEnd && hasStarted) {
       onEnd(target, parseInt(target.style.left), parseInt(target.style.top));
     }
 
     isMoving = false;
     hasStarted = false;
-  });
+  }
 
-  // Register mouse-move callback to move the element.
-  _callbacks.push(function move(x, y) {
+  // Mouse-move callback to move the element.
+  function move(x, y) {
     if (!isMoving) {
       return;
     }
@@ -79,7 +81,22 @@ export const dragmove = function(target, handler, onStart, onEnd) {
 
     target.style.left = lastX + "px";
     target.style.top = lastY + "px";
-  });
+  }
+
+  handler.addEventListener(_downEvent, onDown);
+  document.addEventListener(_upEvent, onUp);
+  _callbacks.push(move);
+
+  // Removes the listeners so the element can be garbage collected.
+  return function destroy() {
+    handler.removeEventListener(_downEvent, onDown);
+    document.removeEventListener(_upEvent, onUp);
+
+    const i = _callbacks.indexOf(move);
+    if (i !== -1) {
+      _callbacks.splice(i, 1);
+    }
+  };
 }
 
 export { dragmove as default };
