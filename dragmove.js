@@ -2,74 +2,50 @@
 // Kailash Nadh (c) 2020.
 // MIT License.
 
-let _loaded = false;
-let _callbacks = [];
-const _isTouch = window.ontouchstart !== undefined;
+export const dragmove = function (target, handler, onStart, onEnd) {
+  let pId = null, hasStarted = false, captureTarget = handler;
+  let offsetX = 0, offsetY = 0, lastX = 0, lastY = 0, downX = 0, downY = 0;
+  const touchAction = handler.style.touchAction;
 
-export const dragmove = function(target, handler, onStart, onEnd) {
-  // Register a global event to capture mouse moves (once).
-  if (!_loaded) {
-    document.addEventListener(_isTouch ? "touchmove" : "mousemove", function(e) {
-      let c = e;
-      if (e.touches) {
-        c = e.touches[0];
-      }
-
-      // On mouse move, dispatch the coords to all registered callbacks.
-      for (var i = 0; i < _callbacks.length; i++) {
-        _callbacks[i](c.clientX, c.clientY);
-      }
-    });
-  }
-
-  _loaded = true;
-  let isMoving = false, hasStarted = false;
-  let startX = 0, startY = 0, lastX = 0, lastY = 0;
-
-  // On the first click and hold, record the offset of the pointer in relation
-  // to the point of click inside the element.
-  handler.addEventListener(_isTouch ? "touchstart" : "mousedown", function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    if (target.dataset.dragEnabled === "false") {
+  // Record the pointer's offset inside the element and capture subsequent events.
+  function onDown(e) {
+    if (pId === null) hasStarted = false;
+    if (pId !== null || e.button !== 0 || !e.isPrimary || target.dataset.dragEnabled === "false" ||
+      e.target.closest("input, textarea, select") || e.target.isContentEditable) {
       return;
     }
 
-    let c = e;
-    if (e.touches) {
-      c = e.touches[0];
+    e.stopPropagation();
+    e.preventDefault();
+    pId = e.pointerId;
+    downX = e.clientX;
+    downY = e.clientY;
+    offsetX = target.offsetLeft - downX;
+    offsetY = target.offsetTop - downY;
+    captureTarget = e.target;
+    captureTarget.setPointerCapture(pId);
+  }
+
+  function onPointer(e) {
+    if (pId === null || e.pointerId !== pId) return;
+
+    if (e.type !== "pointermove") {
+      pId = null;
+      if (onEnd && hasStarted) onEnd(target, parseInt(target.style.left), parseInt(target.style.top));
+      return;
     }
 
-    isMoving = true;
-    startX = target.offsetLeft - c.clientX;
-    startY = target.offsetTop - c.clientY;
-  });
-
-  // On leaving click, stop moving.
-  document.addEventListener(_isTouch ? "touchend" : "mouseup", function(e) {   
-    if (onEnd && hasStarted) {
-      onEnd(target, parseInt(target.style.left), parseInt(target.style.top));
-    }
-
-    isMoving = false;
-    hasStarted = false;
-  });
-
-  // Register mouse-move callback to move the element.
-  _callbacks.push(function move(x, y) {
-    if (!isMoving) {
+    if (!hasStarted && Math.hypot(e.clientX - downX, e.clientY - downY) < 3) {
       return;
     }
 
     if (!hasStarted) {
       hasStarted = true;
-      if (onStart) {
-        onStart(target, lastX, lastY);
-      }
+      if (onStart) onStart(target, lastX, lastY);
     }
 
-    lastX = x + startX;
-    lastY = y + startY;
+    lastX = e.clientX + offsetX;
+    lastY = e.clientY + offsetY;
 
     // If boundary checking is on, don't let the element cross the viewport.
     if (target.dataset.dragBoundary === "true") {
@@ -79,7 +55,38 @@ export const dragmove = function(target, handler, onStart, onEnd) {
 
     target.style.left = lastX + "px";
     target.style.top = lastY + "px";
-  });
+  }
+
+  function onClick(e) {
+    if (hasStarted && e.detail) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+    hasStarted = false;
+  }
+
+  const events = { pointerdown: onDown, pointermove: onPointer, pointerup: onPointer, pointercancel: onPointer, lostpointercapture: onPointer, click: onClick };
+  handler.style.touchAction = "none";
+  for (const type in events) {
+    handler.addEventListener(type, events[type], true);
+  }
+
+  function destroy() {
+    for (const type in events) {
+      handler.removeEventListener(type, events[type], true);
+    }
+
+    if (pId !== null && captureTarget.hasPointerCapture(pId)) {
+      captureTarget.releasePointerCapture(pId);
+    }
+
+    pId = null;
+    hasStarted = false;
+    handler.style.touchAction = touchAction;
+  }
+
+  destroy.remove = destroy;
+  return destroy;
 }
 
 export { dragmove as default };
